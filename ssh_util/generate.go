@@ -18,7 +18,7 @@ func MakeSSHKeyPair(pubKeyPath string, privateKeyPath string) error {
 	}
 
 	// generate and write private key as PEM
-	privateKeyFile, err := os.Create(privateKeyPath)
+	privateKeyFile, err := os.OpenFile(privateKeyPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	defer privateKeyFile.Close()
 	if err != nil {
 		return err
@@ -33,5 +33,5 @@ func MakeSSHKeyPair(pubKeyPath string, privateKeyPath string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(pubKeyPath, ssh.MarshalAuthorizedKey(pub), 0655)
+	return ioutil.WriteFile(pubKeyPath, ssh.MarshalAuthorizedKey(pub), 0600)
 }

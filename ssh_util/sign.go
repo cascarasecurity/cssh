@@ -34,7 +34,7 @@ func SignKey(orgId int, pubKey string, oauthToken string) (string, error) {
 		return "", err
 	}
 	if !status {
-		return "", fmt.Errorf("Got bad status code in SignKey! Body=%s", string(body))
+		return "", fmt.Errorf("Got bad status code in SignKey! Body=%s", parsedBody.(string))
 	}
 	return parsedBody.(string), nil
 }

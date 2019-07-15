@@ -30,7 +30,6 @@ func main() {
 		check(err)
 
 		// TODO: Cache the token?
-		// TODO: Check if the current key is valid
 
 		err = ssh_util.MakeSSHKeyPair(lib.GetSSHPublicKey(), lib.GetSSHPrivateKey())
 		check(err)
@@ -44,11 +43,11 @@ func main() {
 		signed, err := ssh_util.SignKey(orgId, string(pubKey), token)
 		check(err)
 
-		err = ioutil.WriteFile(lib.GetSSHSignedKey(), []byte(signed), 0644)
+		err = ioutil.WriteFile(lib.GetSSHSignedKey(), []byte(signed), 0600)
 		check(err)
 	}
 
-	argumentList := []string{"-i", lib.GetSSHPrivateKey()}
+	argumentList := []string{"-i", lib.GetSSHPrivateKey(), "-o", "IdentitiesOnly=yes"}
 	argumentList = append(argumentList, os.Args[1:]...)
 
 	cmd := exec.Command("ssh", argumentList...)

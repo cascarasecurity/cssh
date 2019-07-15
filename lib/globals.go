@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 )
 
-var Client_ID = "338194013238-dv5vitutvgevc9rn316j9430mhcka1qg.apps.googleusercontent.com"
-var Client_Secret = "BQm6CLrO_Mf7NrAwXi1tN9_J"
+var Client_ID = "338194013238-p2crol97smqj7d21q1ba15ln4fmijh0n.apps.googleusercontent.com"
+var Client_Secret = "78ilrmRKSS0skXU_pDKfKQx1"
 
 func GetSSHPrivateKey() string {
 	usr, _ := user.Current()
