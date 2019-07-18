@@ -12,7 +12,7 @@ import (
 	"os/exec"
 )
 
-var Cascara_Org_ID string = "82"	// TODO: Inject this
+var Cascara_Org_ID string = "61"	// TODO: Inject this
 
 func check(e error) {
 	if e != nil {
@@ -26,12 +26,7 @@ func GetOrgID() (int, error) {
 
 func main() {
 	if needToRenewCert() {
-		token, err := oauth.GetAccessToken()
-		check(err)
-
-		// TODO: Cache the token?
-
-		err = ssh_util.MakeSSHKeyPair(lib.GetSSHPublicKey(), lib.GetSSHPrivateKey())
+		err := ssh_util.MakeSSHKeyPair(lib.GetSSHPublicKey(), lib.GetSSHPrivateKey())
 		check(err)
 
 		pubKey, err := ioutil.ReadFile(lib.GetSSHPublicKey())
@@ -39,6 +34,11 @@ func main() {
 
 		orgId, err := GetOrgID()
 		check(err)
+
+		token, err := oauth.GetAccessToken(false)
+		check(err)
+
+		// TODO: Cache the token?
 
 		signed, err := ssh_util.SignKey(orgId, string(pubKey), token)
 		check(err)

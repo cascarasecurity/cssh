@@ -8,6 +8,11 @@ import (
 	"net/http"
 	"log"
 	"context"
+	"io/ioutil"
+	"encoding/json"
+	"os/user"
+	"strings"
+	"path/filepath"
 )
 
 var scope = "https://www.googleapis.com/auth/userinfo.email"
@@ -20,8 +25,8 @@ var htmlTemplate = `
         position: absolute;
         top: 0;
         left: 0;
-        height: 100%;
-        width: 100%;
+        height: 100%%;
+        width: 100%%;
     }
     
     .middle {
@@ -37,7 +42,7 @@ var htmlTemplate = `
     }
     
     .icon {
-        width: 10%;
+        width: 10%%;
         color: #5fba7d;
     }
 </style>
@@ -62,7 +67,21 @@ var htmlTemplate = `
 </div>
 `
 
-func GetAccessToken() (string, error) {
+func expandPath(path string) string {
+	usr, _ := user.Current()
+	if strings.HasPrefix(path, "~/") {
+		return filepath.Join(usr.HomeDir, path[2:])
+	}
+	return path
+}
+
+func GetAccessToken(bypassCache bool) (string, error) {
+	if !bypassCache {
+		accessToken, err := readCachedAccessToken()
+		if err == nil {
+			return accessToken, nil
+		}
+	}
 	srv, codeChan := startHttpServer()
 
 	url := fmt.Sprintf("%s?client_id=%s&response_type=code&scope=%s&access_type=offline&redirect_uri=http://localhost:2242/redirect",
@@ -79,7 +98,41 @@ func GetAccessToken() (string, error) {
 	if code == "" {
 		return code, fmt.Errorf("Failed to get an auth token from Google. Did you complete the OAuth flow correctly?")
 	}
+	err = writeAccessToken(code)
+	if err != nil {
+		fmt.Printf("Failed to cache OAuth token... You will be prompted to re-auth every time: %v", err)
+	}
 	return code, nil
+}
+
+type CSSHCache struct {
+	Token string `json:"token"`
+}
+
+func readCachedAccessToken() (string, error) {
+	// TODO: Need to properly handle expiry for the access token
+	bytes, err := ioutil.ReadFile(expandPath("~/.ssh/cssh.cache"))
+	if err != nil {
+		return "", err
+	}
+	var c CSSHCache
+	err = json.Unmarshal(bytes, &c)
+	if err != nil {
+		return "", err
+	}
+	return c.Token, nil
+}
+
+func writeAccessToken(token string) error {
+	bytes, err := json.Marshal(CSSHCache{Token: token})
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(expandPath("~/.ssh/cssh.cache"), bytes, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func startHttpServer() (*http.Server, chan string) {

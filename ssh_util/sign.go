@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"fmt"
 	"github.com/cascarasecurity/cssh/lib"
+	"github.com/cascarasecurity/cssh/oauth"
 )
 
 func SignKey(orgId int, pubKey string, oauthToken string) (string, error) {
@@ -32,6 +33,15 @@ func SignKey(orgId int, pubKey string, oauthToken string) (string, error) {
 	status, parsedBody, err := parseServerResponse(string(body))
 	if err != nil {
 		return "", err
+	}
+	if parsedBody == "force_refresh_token" {
+		// Server says our token is bad and we need a new one
+		fmt.Println("Refreshing OAuth token due to token expiration...")
+		token, err := oauth.GetAccessToken(true)
+		if err != nil {
+			return "", err
+		}
+		return SignKey(orgId, pubKey, token)
 	}
 	if !status {
 		return "", fmt.Errorf("Got bad status code in SignKey! Body=%s", parsedBody.(string))
