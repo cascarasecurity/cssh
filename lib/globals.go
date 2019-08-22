@@ -27,6 +27,6 @@ func GetSSHSignedKey() string {
 }
 
 func GetDomain() string {
-	return "http://localhost:5000"
-	//return "https://keys.cascarasecurity.com"
+	//return "http://localhost:5000"
+	return "https://keys.cascarasecurity.com"
 }
